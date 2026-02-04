@@ -6,3 +6,4 @@ formatters:
   settings:
     golines:
       max-len: 120
+      shorten-comments: true
