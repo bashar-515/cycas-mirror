@@ -25,12 +25,15 @@ $(oapi-codegen):
 tidy:
 	go mod tidy
 
-.PHONY: lint
+.PHONY: lint format
 
 golangci-lint := $(gobin)/golangci-lint
 
 lint: $(golangci-lint)
 	$(golangci-lint) run
 
+format: $(golangci-lint)
+	$(golangci-lint) fmt
+
 $(golangci-lint):
-	GOBIN=$(gobin) go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	GOBIN=$(gobin) go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.8.0
