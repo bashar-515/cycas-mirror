@@ -45,7 +45,7 @@ func main() {
 
 	go func() {
 		if err := srv.Serve(listener); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("error listening and serving: %v", err) // TODO: stop calling log.Fatalf in this Go routine
+			// TODO: handle error
 		}
 	}()
 
