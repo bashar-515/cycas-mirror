@@ -1,6 +1,8 @@
 project := $(shell pwd)
 gobin := $(project)/go/bin
 
+CONTAINER_RUNTIME ?= container
+
 .PHONY: gen
 
 gen: gen-api gen-sdk
@@ -29,7 +31,7 @@ $(oapi-codegen):
 gen-sdk: gen/sdk
 
 gen/sdk: api/openapi.yaml
-	container run --rm --volume "$(project):/local" openapitools/openapi-generator-cli generate \
+	$(CONTAINER_RUNTIME) run --rm --volume "$(project):/local" openapitools/openapi-generator-cli generate \
     	--generator-name typescript \
     	--input-spec /local/api/openapi.yaml \
     	--output /local/gen/sdk
