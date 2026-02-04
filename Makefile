@@ -1,4 +1,4 @@
-# this Makefile requires go1.25+ and a container runtime (e.g., docker, podman, [Apple] container, etc.)
+# go1.25+ and a container runtime (e.g., docker, podman, [Apple] container, etc.) are required
 # 
 
 project := $(shell pwd)
