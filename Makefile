@@ -49,6 +49,11 @@ format: $(golangci-lint)
 $(golangci-lint):
 	GOBIN=$(gobin) go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.8.0
 
+sqlc := $(gobin)/sqlc
+
+$(sqlc):
+	GOBIN=$(gobin) go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+
 .PHONY: tools
 
-tools: $(oapi-codegen) $(golangci-lint)
+tools: $(oapi-codegen) $(golangci-lint) $(sqlc)
