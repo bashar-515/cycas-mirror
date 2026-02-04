@@ -6,12 +6,12 @@ CONTAINER_RUNTIME ?= container
 .PHONY: gen
 
 gen: _gen-api gen-sdk _gen-db
-	$(MAKE) tidy
+	$(MAKE) _tidy
 
 .PHONY: gen-api _gen-api
 
 gen-api: _gen-api
-	$(MAKE) tidy
+	$(MAKE) _tidy
 
 _gen-api: gen/api/models.go gen/api/server.go gen/api/spec.go
 
@@ -67,9 +67,9 @@ format: $(golangci-lint)
 $(golangci-lint):
 	GOBIN=$(gobin) go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.8.0
 
-.PHONY: tidy
+.PHONY: _tidy
 
-tidy:
+_tidy:
 	go mod tidy
 
 .PHONY: tools
