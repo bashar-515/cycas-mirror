@@ -69,4 +69,4 @@ tidy:
 
 .PHONY: tools
 
-tools: $(oapi-codegen) $(golangci-lint) $(sqlc)
+tools: $(oapi-codegen) $(sqlc) $(golangci-lint)
