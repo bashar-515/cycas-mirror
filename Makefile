@@ -9,7 +9,6 @@ gen: gen-api gen-sdk
 
 gen-api: gen/api/models.go gen/api/server.go gen/api/spec.go
 	go mod tidy
-	$(MAKE) tidy
 
 oapi-codegen := $(gobin)/oapi-codegen
 
