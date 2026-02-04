@@ -6,6 +6,22 @@ gobin := $(project)/go/bin
 
 CONTAINER_RUNTIME ?= container
 
+.PHONY: up-db
+
+postgres_container := cycas-db
+
+up-db:
+	$(CONTAINER_RUNTIME) run \
+		--name $(postgres_container) \
+		--env POSTGRES_PASSWORD=mysecretpassword \
+		--detach postgres
+
+down-db:
+	$(CONTAINER_RUNTIME) stop $(postgres_container)
+
+clean-db:
+	$(CONTAINER_RUNTIME) rm $(postgres_container)
+
 .PHONY: gen
 
 gen: _gen-api gen-sdk _gen-db
