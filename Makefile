@@ -5,12 +5,15 @@ CONTAINER_RUNTIME ?= container
 
 .PHONY: gen
 
-gen: gen-api gen-sdk gen-db
-
-.PHONY: gen-api
-
-gen-api: gen/api/models.go gen/api/server.go gen/api/spec.go
+gen: _gen-api gen-sdk _gen-db
 	$(MAKE) tidy
+
+.PHONY: gen-api _gen-api
+
+gen-api: _gen-api
+	$(MAKE) tidy
+
+_gen-api: gen/api/models.go gen/api/server.go gen/api/spec.go
 
 oapi-codegen := $(gobin)/oapi-codegen
 
@@ -36,10 +39,12 @@ gen/sdk: api/openapi.yaml
     	--input-spec /local/api/openapi.yaml \
     	--output /local/gen/sdk
 
-.PHONY: gen-db
+.PHONY: gen-db _gen-db
 
-gen-db: gen/db
+gen-db: _gen-db
 	$(MAKE) tidy
+
+_gen-db: gen/db
 
 sqlc := $(gobin)/sqlc
 
