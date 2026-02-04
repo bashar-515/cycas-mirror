@@ -45,7 +45,7 @@ gen/sdk: api/openapi.yaml
 .PHONY: gen-db _gen-db
 
 gen-db: _gen-db
-	$(MAKE) tidy
+	$(MAKE) _tidy
 
 _gen-db: gen/db
 
