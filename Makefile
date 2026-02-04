@@ -46,3 +46,7 @@ format: $(golangci-lint)
 
 $(golangci-lint):
 	GOBIN=$(gobin) go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.8.0
+
+.PHONY: tools
+
+tools: $(oapi-codegen) $(golangci-lint)
