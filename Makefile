@@ -5,12 +5,12 @@ CONTAINER_RUNTIME ?= container
 
 .PHONY: gen
 
-gen: gen-api gen-sdk
+gen: gen-api gen-sdk gen-db
 
 .PHONY: gen-api
 
 gen-api: gen/api/models.go gen/api/server.go gen/api/spec.go
-	go mod tidy
+	$(MAKE) tidy
 
 oapi-codegen := $(gobin)/oapi-codegen
 
@@ -36,6 +36,19 @@ gen/sdk: api/openapi.yaml
     	--input-spec /local/api/openapi.yaml \
     	--output /local/gen/sdk
 
+.PHONY: gen-db
+
+gen-db: gen/db
+	$(MAKE) tidy
+
+sqlc := $(gobin)/sqlc
+
+gen/db: db/sqlc.yaml $(wildcard db/schema/*.sql) $(wildcard db/queries/*.sql) $(sqlc)
+	$(sqlc) generate -f db/sqlc.yaml
+
+$(sqlc):
+	GOBIN=$(gobin) go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+
 .PHONY: lint format
 
 golangci-lint := $(gobin)/golangci-lint
@@ -49,10 +62,10 @@ format: $(golangci-lint)
 $(golangci-lint):
 	GOBIN=$(gobin) go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.8.0
 
-sqlc := $(gobin)/sqlc
+.PHONY: tidy
 
-$(sqlc):
-	GOBIN=$(gobin) go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+tidy:
+	go mod tidy
 
 .PHONY: tools
 
