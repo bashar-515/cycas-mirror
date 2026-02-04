@@ -29,7 +29,7 @@ $(oapi-codegen):
 gen-sdk: gen/sdk
 
 gen/sdk: api/openapi.yaml
-	container run --rm --volume "$(project):/local" docker.io/openapitools/openapi-generator-cli generate \
+	container run --rm --volume "$(project):/local" openapitools/openapi-generator-cli generate \
     	--generator-name typescript \
     	--input-spec /local/api/openapi.yaml \
     	--output /local/gen/sdk
