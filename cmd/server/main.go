@@ -55,6 +55,6 @@ func main() {
 	defer shutdownCancel()
 
 	if err = srv.Shutdown(shutdownCtx); err != nil {
-		log.Fatalf("error shutting server down: %v", err)
+		log.Fatal(err) // TODO: wrap error
 	}
 }
