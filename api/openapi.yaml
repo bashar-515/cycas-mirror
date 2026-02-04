@@ -1,0 +1,77 @@
+openapi: 3.0.3
+
+info:
+  title: Cycas API
+  version: 0.0.1
+
+servers:
+  - url: http://localhost:9000
+
+security:
+  - bearerAuth: []
+
+paths:
+  /ping:
+    get:
+      security: []
+      operationId: ping
+      responses:
+        "200":
+          description: Ping received
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: pong
+
+  /v1/categories:
+    post:
+      operationId: createCategory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  minLength: 4
+                  maxLength: 24
+                  pattern: "^[a-z]{4,24}$"
+
+      responses:
+        # TODO: [q] do I need a response for invalid input?
+        "201":
+          description: Category created
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id]
+                properties:
+                  id:
+                    type: string
+
+        "409":
+          description: Category with name already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
