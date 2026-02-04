@@ -16,6 +16,9 @@ func (s *Server) Ping(ctx context.Context, request api.PingRequestObject) (api.P
 	return api.Ping200TextResponse("pong"), nil
 }
 
-func (s *Server) CreateCategory(ctx context.Context, request api.CreateCategoryRequestObject) (api.CreateCategoryResponseObject, error) {
+func (s *Server) CreateCategory(
+	ctx context.Context,
+	request api.CreateCategoryRequestObject,
+) (api.CreateCategoryResponseObject, error) {
 	return nil, nil
 }
