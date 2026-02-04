@@ -3,7 +3,12 @@ gobin := $(project)/go/bin
 
 .PHONY: gen
 
-gen: gen/api/models.go gen/api/server.go gen/api/spec.go
+gen: gen-api gen-sdk
+
+.PHONY: gen-api
+
+gen-api: gen/api/models.go gen/api/server.go gen/api/spec.go
+	go mod tidy
 	$(MAKE) tidy
 
 oapi-codegen := $(gobin)/oapi-codegen
@@ -20,10 +25,15 @@ gen/api/spec.go: api/openapi.yaml api/config/spec.yaml | $(oapi-codegen)
 $(oapi-codegen):
 	GOBIN=$(gobin) go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
 
-.PHONY: tidy
+.PHONY: gen-sdk
 
-tidy:
-	go mod tidy
+gen-sdk: gen/sdk
+
+gen/sdk: api/openapi.yaml
+	container run --rm --volume "$(project):/local" docker.io/openapitools/openapi-generator-cli generate \
+    	--generator-name typescript \
+    	--input-spec /local/api/openapi.yaml \
+    	--output /local/gen/sdk
 
 .PHONY: lint format
 
