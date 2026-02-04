@@ -24,3 +24,13 @@ $(oapi-codegen):
 
 tidy:
 	go mod tidy
+
+.PHONY: lint
+
+golangci-lint := $(gobin)/golangci-lint
+
+lint: $(golangci-lint)
+	$(golangci-lint) run
+
+$(golangci-lint):
+	GOBIN=$(gobin) go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
