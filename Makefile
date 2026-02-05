@@ -70,16 +70,16 @@ gen/sdk: api/openapi.yaml
 gen-db: _gen-db
 	$(MAKE) _tidy
 
-_gen-db: gen/db gen/db/migrations
+_gen-db: gen/db gen/db/migrations/atlas.sum
 
 sqlc := $(gobin)/sqlc
 
 gen/db: db/sqlc.yaml $(wildcard db/schema/*.sql) $(wildcard db/queries/*.sql) $(sqlc)
 	$(sqlc) generate -f db/sqlc.yaml
 
-gen/db/migrations: db/atlas.hcl $(wildcard db/schema/*.sql)
+gen/db/migrations/atlas.sum: db/atlas.hcl $(wildcard db/schema/*.sql)
 	CYCAS_DATABASE_URL="postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost:$(POSTGRES_PORT)/$(POSTGRES_USER)?sslmode=disable" \
-		atlas --config file://db/atlas.hcl migrate diff --env local
+		atlas --config file://db/atlas.hcl migrate diff --env local migration
 
 $(sqlc):
 	GOBIN=$(gobin) go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
