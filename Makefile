@@ -20,9 +20,6 @@ ATLAS_POSTGRES_DB ?= atlas
 
 database_url_prefix := postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)
 
-cycas_database_url := $(database_url_prefix)/$(CYCAS_POSTGRES_DB)?sslmode=disable
-atlas_database_url := $(database_url_prefix)/$(ATLAS_POSTGRES_DB)?sslmode=disable
-
 db-up:
 	$(CONTAINER_RUNTIME) run \
         --name $(postgres_container) \
@@ -89,7 +86,7 @@ gen/db: db/sqlc.yaml $(wildcard db/schema/*.sql) $(wildcard db/queries/*.sql) $(
 	$(sqlc) generate -f db/sqlc.yaml
 
 gen/db/migrations/atlas.sum: db/atlas.hcl $(wildcard db/schema/*.sql)
-	CYCAS_DATABASE_URL=$(atlas_database_url) atlas --config file://db/atlas.hcl migrate diff --env local migration
+	CYCAS_ATLAS_DATABASE_URL="$(database_url_prefix)/$(ATLAS_POSTGRES_DB)?sslmode=disable" atlas --config file://db/atlas.hcl migrate diff --env local migration
 
 $(sqlc):
 	GOBIN=$(gobin) go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
