@@ -71,11 +71,11 @@ sqlc := $(gobin)/sqlc
 gen/db: db/sqlc.yaml $(wildcard db/schema/*.sql) $(wildcard db/queries/*.sql) $(sqlc)
 	$(sqlc) generate -f db/sqlc.yaml
 
-$(sqlc):
-	GOBIN=$(gobin) go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
-
 gen/db/migrations: db/atlas.hcl $(wildcard db/schema/*.sql)
 	CYCAS_DATABASE_URL="postgres://postgres:mysecretpassword@localhost:5432/postgres?sslmode=disable" atlas --config file://db/atlas.hcl migrate diff --env local
+
+$(sqlc):
+	GOBIN=$(gobin) go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 
 .PHONY: lint format
 
