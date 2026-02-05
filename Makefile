@@ -1,4 +1,4 @@
-# go1.25+ and a container runtime (e.g., docker, podman, [Apple] container, etc.) are required
+# requirements: go1.25+ and a container runtime (e.g., docker, podman, [Apple] container, etc.)
 # 
 
 project := $(shell pwd)
@@ -6,20 +6,20 @@ gobin := $(project)/go/bin
 
 CONTAINER_RUNTIME ?= container
 
-.PHONY: up-db
+.PHONY: db-up db-down db-clean
 
 postgres_container := cycas-db
 
-up-db:
+db-up:
 	$(CONTAINER_RUNTIME) run \
 		--name $(postgres_container) \
 		--env POSTGRES_PASSWORD=mysecretpassword \
 		--detach postgres
 
-down-db:
+db-down:
 	$(CONTAINER_RUNTIME) stop $(postgres_container)
 
-clean-db:
+db-clean:
 	$(CONTAINER_RUNTIME) rm $(postgres_container)
 
 .PHONY: gen
