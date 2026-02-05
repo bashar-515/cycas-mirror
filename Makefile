@@ -21,15 +21,17 @@ ATLAS_POSTGRES_DB ?= atlas
 database_url_prefix := postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)
 
 db-up:
-	$(CONTAINER_RUNTIME) run \
-        --name $(postgres_container) \
-        --env POSTGRES_USER=$(POSTGRES_USER) \
-        --env POSTGRES_PASSWORD=$(POSTGRES_PASSWORD) \
-        --env POSTGRES_DB=$(CYCAS_POSTGRES_DB) \
-        --publish $(POSTGRES_PORT):5432 \
-        --detach postgres
-	sleep 2
-	$(CONTAINER_RUNTIME) exec $(postgres_container) psql -U $(POSTGRES_USER) -c "CREATE DATABASE $(ATLAS_POSTGRES_DB);"
+	@$(CONTAINER_RUNTIME) start $(postgres_container) 2>/dev/null || \
+        $(CONTAINER_RUNTIME) run \
+            --name $(postgres_container) \
+            --env POSTGRES_USER=$(POSTGRES_USER) \
+            --env POSTGRES_PASSWORD=$(POSTGRES_PASSWORD) \
+            --env POSTGRES_DB=$(CYCAS_POSTGRES_DB) \
+            --publish $(POSTGRES_PORT):5432 \
+            --detach postgres \
+            && sleep 2
+	$(CONTAINER_RUNTIME) exec $(postgres_container) psql -U $(POSTGRES_USER) -c "CREATE DATABASE $(ATLAS_POSTGRES_DB);" 2>/dev/null || true
+	$(MAKE) _migrate
 
 db-down:
 	$(CONTAINER_RUNTIME) stop $(postgres_container)
@@ -90,6 +92,11 @@ gen/db/migrations/atlas.sum: db/atlas.hcl $(wildcard db/schema/*.sql)
 
 $(sqlc):
 	GOBIN=$(gobin) go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+
+.PHONY: _migrate
+
+_migrate: gen/db/migrations/atlas.sum
+	CYCAS_DATABASE_URL="$(database_url_prefix)/$(CYCAS_POSTGRES_DB)?sslmode=disable" go run ./cmd/migrate
 
 .PHONY: lint format
 
