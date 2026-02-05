@@ -15,15 +15,24 @@ POSTGRES_PASSWORD ?= mysecretpassword
 POSTGRES_HOST ?= localhost
 POSTGRES_PORT ?= 5432
 
-database_url := "postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost:$(POSTGRES_PORT)/$(POSTGRES_USER)?sslmode=disable"
+CYCAS_POSTGRES_DB ?= cycas
+ATLAS_POSTGRES_DB ?= atlas
+
+database_url_prefix := postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)
+
+cycas_database_url := $(database_url_prefix)/$(CYCAS_POSTGRES_DB)?sslmode=disable
+atlas_database_url := $(database_url_prefix)/$(ATLAS_POSTGRES_DB)?sslmode=disable
 
 db-up:
 	$(CONTAINER_RUNTIME) run \
         --name $(postgres_container) \
         --env POSTGRES_USER=$(POSTGRES_USER) \
         --env POSTGRES_PASSWORD=$(POSTGRES_PASSWORD) \
+        --env POSTGRES_DB=$(CYCAS_POSTGRES_DB) \
         --publish $(POSTGRES_PORT):5432 \
         --detach postgres
+	sleep 2
+	$(CONTAINER_RUNTIME) exec $(postgres_container) psql -U $(POSTGRES_USER) -c "CREATE DATABASE $(ATLAS_POSTGRES_DB);"
 
 db-down:
 	$(CONTAINER_RUNTIME) stop $(postgres_container)
@@ -80,7 +89,7 @@ gen/db: db/sqlc.yaml $(wildcard db/schema/*.sql) $(wildcard db/queries/*.sql) $(
 	$(sqlc) generate -f db/sqlc.yaml
 
 gen/db/migrations/atlas.sum: db/atlas.hcl $(wildcard db/schema/*.sql)
-	CYCAS_DATABASE_URL=$(database_url) atlas --config file://db/atlas.hcl migrate diff --env local migration
+	CYCAS_DATABASE_URL=$(atlas_database_url) atlas --config file://db/atlas.hcl migrate diff --env local migration
 
 $(sqlc):
 	GOBIN=$(gobin) go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
