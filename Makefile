@@ -10,17 +10,23 @@ CONTAINER_RUNTIME ?= container
 
 postgres_container := cycas-db
 
+POSTGRES_USER ?= postgres
+POSTGRES_PASSWORD ?= mysecretpassword
+POSTGRES_HOST ?= localhost
+POSTGRES_PORT ?= 5432
+
 db-up:
 	$(CONTAINER_RUNTIME) run \
-		--name $(postgres_container) \
-		--env POSTGRES_PASSWORD=mysecretpassword \
-		--publish 5432:5432 \
-		--detach postgres
+        --name $(postgres_container) \
+        --env POSTGRES_USER=$(POSTGRES_USER) \
+        --env POSTGRES_PASSWORD=$(POSTGRES_PASSWORD) \
+        --publish $(POSTGRES_PORT):5432 \
+        --detach postgres
 
 db-down:
 	$(CONTAINER_RUNTIME) stop $(postgres_container)
 
-db-clean:
+db-clean: db-down
 	$(CONTAINER_RUNTIME) rm $(postgres_container)
 
 .PHONY: gen
@@ -64,7 +70,7 @@ gen/sdk: api/openapi.yaml
 gen-db: _gen-db
 	$(MAKE) _tidy
 
-_gen-db: gen/db gen/db/migration
+_gen-db: gen/db gen/db/migrations
 
 sqlc := $(gobin)/sqlc
 
@@ -72,7 +78,8 @@ gen/db: db/sqlc.yaml $(wildcard db/schema/*.sql) $(wildcard db/queries/*.sql) $(
 	$(sqlc) generate -f db/sqlc.yaml
 
 gen/db/migrations: db/atlas.hcl $(wildcard db/schema/*.sql)
-	CYCAS_DATABASE_URL="postgres://postgres:mysecretpassword@localhost:5432/postgres?sslmode=disable" atlas --config file://db/atlas.hcl migrate diff --env local
+	CYCAS_DATABASE_URL="postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost:$(POSTGRES_PORT)/$(POSTGRES_USER)?sslmode=disable" \
+		atlas --config file://db/atlas.hcl migrate diff --env local
 
 $(sqlc):
 	GOBIN=$(gobin) go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
