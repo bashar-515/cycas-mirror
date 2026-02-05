@@ -1,4 +1,4 @@
-# requirements: go1.25+ and a container runtime (e.g., docker, podman, [Apple] container, etc.)
+# requirements: atlas, go1.25+ and a container runtime (e.g., docker, podman, [Apple] container, etc.)
 # 
 
 project := $(shell pwd)
@@ -64,7 +64,7 @@ gen/sdk: api/openapi.yaml
 gen-db: _gen-db
 	$(MAKE) _tidy
 
-_gen-db: gen/db
+_gen-db: gen/db gen/db/migration
 
 sqlc := $(gobin)/sqlc
 
@@ -73,6 +73,9 @@ gen/db: db/sqlc.yaml $(wildcard db/schema/*.sql) $(wildcard db/queries/*.sql) $(
 
 $(sqlc):
 	GOBIN=$(gobin) go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+
+gen/db/migrations: db/atlas.hcl $(wildcard db/schema/*.sql)
+	CYCAS_DATABASE_URL="postgres://postgres:mysecretpassword@localhost:5432/postgres?sslmode=disable" atlas --config file://db/atlas.hcl migrate diff --env local
 
 .PHONY: lint format
 
