@@ -14,6 +14,7 @@ db-up:
 	$(CONTAINER_RUNTIME) run \
 		--name $(postgres_container) \
 		--env POSTGRES_PASSWORD=mysecretpassword \
+		--publish 5432:5432 \
 		--detach postgres
 
 db-down:
