@@ -1,6 +1,10 @@
 # requirements: atlas, go1.25+ and a container runtime (e.g., docker, podman, [Apple] container, etc.)
 # 
 
+# frontend: proxy
+# proxy: api auth || auth api
+# api: db
+
 project := $(shell pwd)
 gobin := $(project)/go/bin
 gen := $(project)/gen
@@ -20,7 +24,7 @@ network := cycas-net
 database_url_prefix := postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)
 
 .PHONY: up
-# TODO: explicitly enfore dependencies
+# TODO: explicitly enfore dependencies...db -> api -> proxy -> cdn; auth can be anywhere before proxy
 up: db-up app-up
 
 .PHONY: down
