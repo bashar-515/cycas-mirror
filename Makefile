@@ -3,6 +3,7 @@
 
 project := $(shell pwd)
 gobin := $(project)/go/bin
+gen := $(project)/gen
 
 CONTAINER ?= container
 
@@ -24,11 +25,16 @@ up: app-up db-up
 .PHONY: down
 down: db-down app-down
 
+.PHONY: clean
+clean: db-clean app-clean
+	rm -rf $(gen) && rm -rf $(gobin)
+	
+
 .PHONY: app-up app-down app-clean
 
 app_container := cycas-app
 
-app-up: network-up
+app-up: network-up _gen-api $(gen)/db
 	$(CONTAINER) start $(app_container) 2>/dev/null || \
 		$(CONTAINER) run \
 			--name $(app_container) \
@@ -88,17 +94,17 @@ gen: _gen-api gen-sdk _gen-db
 gen-api: _gen-api
 	$(MAKE) _tidy
 
-_gen-api: gen/api/models.go gen/api/server.go gen/api/spec.go
+_gen-api: $(gen)/api/models.go $(gen)/api/server.go $(gen)/api/spec.go
 
 oapi-codegen := $(gobin)/oapi-codegen
 
-gen/api/models.go: api/openapi.yaml api/config/models.yaml | $(oapi-codegen)
+$(gen)/api/models.go: api/openapi.yaml api/config/models.yaml | $(oapi-codegen)
 	$(oapi-codegen) -config api/config/models.yaml api/openapi.yaml
 
-gen/api/server.go: api/openapi.yaml api/config/server.yaml | $(oapi-codegen)
+$(gen)/api/server.go: api/openapi.yaml api/config/server.yaml | $(oapi-codegen)
 	$(oapi-codegen) -config api/config/server.yaml api/openapi.yaml
 
-gen/api/spec.go: api/openapi.yaml api/config/spec.yaml | $(oapi-codegen)
+$(gen)/api/spec.go: api/openapi.yaml api/config/spec.yaml | $(oapi-codegen)
 	$(oapi-codegen) -config api/config/spec.yaml api/openapi.yaml
 
 $(oapi-codegen):
@@ -106,9 +112,9 @@ $(oapi-codegen):
 
 .PHONY: gen-sdk
 
-gen-sdk: gen/sdk
+gen-sdk: $(gen)/sdk
 
-gen/sdk: api/openapi.yaml
+$(gen)/sdk: api/openapi.yaml
 	$(CONTAINER) run --rm --volume "$(project):/local" openapitools/openapi-generator-cli generate \
     	--generator-name typescript \
     	--input-spec /local/api/openapi.yaml \
@@ -119,14 +125,14 @@ gen/sdk: api/openapi.yaml
 gen-db: _gen-db
 	$(MAKE) _tidy
 
-_gen-db: gen/db gen/db/migrations/atlas.sum
+_gen-db: $(gen)/db $(gen)/db/migrations/atlas.sum
 
 sqlc := $(gobin)/sqlc
 
-gen/db: db/sqlc.yaml $(wildcard db/schema/*.sql) $(wildcard db/queries/*.sql) $(sqlc)
+$(gen)/db: db/sqlc.yaml $(wildcard db/schema/*.sql) $(wildcard db/queries/*.sql) $(sqlc)
 	$(sqlc) generate -f db/sqlc.yaml
 
-gen/db/migrations/atlas.sum: db/atlas.hcl $(wildcard db/schema/*.sql)
+$(gen)/db/migrations/atlas.sum: db/atlas.hcl $(wildcard db/schema/*.sql)
 	ATLAS_DATABASE_URL="$(database_url_prefix)/$(POSTGRES_DB_ATLAS)?sslmode=disable" atlas --config file://db/atlas.hcl migrate diff --env local migration
 
 $(sqlc):
@@ -134,7 +140,7 @@ $(sqlc):
 
 .PHONY: _migrate
 
-_migrate: gen/db/migrations/atlas.sum
+_migrate: $(gen)/db/migrations/atlas.sum
 	CYCAS_DATABASE_URL="$(database_url_prefix)/$(POSTGRES_DB_CYCAS)?sslmode=disable" go run ./cmd/migrate
 
 .PHONY: lint format
