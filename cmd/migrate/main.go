@@ -2,22 +2,19 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
-
-	"codeberg.org/bashar-515/cycas/internal/config"
 )
 
 func main() {
-	cfg, err := config.Load()
-	if err != nil {
-		log.Fatal(err)
-	}
+	databaseUrl := os.Getenv("CYCAS_DATABASE_URL")
+	// TOOD: handle databaseUrl == "" case
 
-	m, err := migrate.New("file://gen/db/migrations", cfg.DatabaseUrl)
+	m, err := migrate.New("file://gen/db/migrations", databaseUrl)
 	if err != nil {
 		log.Fatal(err) // TODO: wrap error
 	}
