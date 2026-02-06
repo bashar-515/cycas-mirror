@@ -33,7 +33,7 @@ clean: db-clean app-clean
 
 app_container := cycas-app
 
-app-up: network-up _gen-api $(gen)/db
+app-up: network-up gen-go
 	$(CONTAINER) start $(app_container) 2>/dev/null || \
 		$(CONTAINER) run \
 			--name $(app_container) \
@@ -83,9 +83,12 @@ network-up:
 network-down:
 	$(CONTAINER) network rm $(network) 2>/dev/null || true
 
-.PHONY: gen
+.PHONY: gen gen-go
 
-gen: _gen-api gen-sdk _gen-db
+gen: _gen-api _gen-db gen-sdk
+	$(MAKE) _tidy
+
+gen-go: _gen-api $(gen)/db
 	$(MAKE) _tidy
 
 .PHONY: gen-api _gen-api
