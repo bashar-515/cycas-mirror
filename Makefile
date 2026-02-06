@@ -23,7 +23,7 @@ database_url_prefix := postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGR
 up: db-up app-up
 
 .PHONY: down
-down: db-down app-down
+down: app-down db-down
 
 .PHONY: clean
 clean: db-clean app-clean
