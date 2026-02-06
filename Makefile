@@ -18,21 +18,49 @@ network := cycas-net
 
 database_url_prefix := postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)
 
+.PHONY: up
+up: app-up db-up 
+
+.PHONY: down
+down: db-down app-down
+
+.PHONY: app-up app-down app-clean
+
+app_container := cycas-app
+
+app-up: network-up
+	$(CONTAINER) start $(app_container) 2>/dev/null || \
+		$(CONTAINER) run \
+			--name $(app_container) \
+			--network $(network) \
+			--workdir /app \
+			--env "air_wd=/app" \
+			--volume $(project):/app \
+			--detach \
+			cosmtrek/air
+
+app-down:
+	$(CONTAINER) stop $(app_container)
+
+app-clean: app-down
+	$(CONTAINER) rm $(app_container)
+
 .PHONY: db-up db-down db-clean
 
 database_container := cycas-db
 
-db-up: network-up
+db-up: network-up app-up
 	@$(CONTAINER) start $(database_container) 2>/dev/null || \
         $(CONTAINER) run \
-            --name $(database_container) \
+          	--name $(database_container) \
 						--network $(network) \
             --env POSTGRES_USER=$(POSTGRES_USER) \
             --env POSTGRES_PASSWORD=$(POSTGRES_PASSWORD) \
             --env POSTGRES_DB=$(POSTGRES_DB_CYCAS) \
             --publish $(POSTGRES_PORT):5432 \
-            --detach postgres \
-            && sleep 2
+            --detach \
+						postgres
+	@until $(CONTAINER) exec $(database_container) pg_isready -U $(POSTGRES_USER); do sleep 1; done
 	$(CONTAINER) exec $(database_container) psql -U $(POSTGRES_USER) -c "CREATE DATABASE $(POSTGRES_DB_ATLAS);" 2>/dev/null || true
 	$(MAKE) _migrate
 
