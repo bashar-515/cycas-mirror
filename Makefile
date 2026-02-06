@@ -26,6 +26,7 @@ db-up: network-up
 	@$(CONTAINER) start $(database_container) 2>/dev/null || \
         $(CONTAINER) run \
             --name $(database_container) \
+						--network $(network) \
             --env POSTGRES_USER=$(POSTGRES_USER) \
             --env POSTGRES_PASSWORD=$(POSTGRES_PASSWORD) \
             --env POSTGRES_DB=$(POSTGRES_DB_CYCAS) \
