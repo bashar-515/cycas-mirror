@@ -1,0 +1,8 @@
+#:schema https://json.schemastore.org/any.json
+
+env_files = []
+
+[build]
+  cmd = "go build -o ./tmp/main ./cmd/server"
+  include_dir = ["cmd/server", "gen/api", "gen/db", "internal"]
+  include_ext = ["go"]
