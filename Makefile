@@ -20,6 +20,7 @@ network := cycas-net
 database_url_prefix := postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)
 
 .PHONY: up
+# TODO: explicitly enfore dependencies
 up: db-up app-up
 
 .PHONY: down
