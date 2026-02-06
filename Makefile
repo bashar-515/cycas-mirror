@@ -4,7 +4,7 @@
 project := $(shell pwd)
 gobin := $(project)/go/bin
 
-CONTAINER_RUNTIME ?= container
+CONTAINER ?= container
 
 .PHONY: db-up db-down db-clean
 
@@ -21,8 +21,8 @@ ATLAS_POSTGRES_DB ?= atlas
 database_url_prefix := postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)
 
 db-up:
-	@$(CONTAINER_RUNTIME) start $(postgres_container) 2>/dev/null || \
-        $(CONTAINER_RUNTIME) run \
+	@$(CONTAINER) start $(postgres_container) 2>/dev/null || \
+        $(CONTAINER) run \
             --name $(postgres_container) \
             --env POSTGRES_USER=$(POSTGRES_USER) \
             --env POSTGRES_PASSWORD=$(POSTGRES_PASSWORD) \
@@ -30,14 +30,14 @@ db-up:
             --publish $(POSTGRES_PORT):5432 \
             --detach postgres \
             && sleep 2
-	$(CONTAINER_RUNTIME) exec $(postgres_container) psql -U $(POSTGRES_USER) -c "CREATE DATABASE $(ATLAS_POSTGRES_DB);" 2>/dev/null || true
+	$(CONTAINER) exec $(postgres_container) psql -U $(POSTGRES_USER) -c "CREATE DATABASE $(ATLAS_POSTGRES_DB);" 2>/dev/null || true
 	$(MAKE) _migrate
 
 db-down:
-	$(CONTAINER_RUNTIME) stop $(postgres_container)
+	$(CONTAINER) stop $(postgres_container)
 
 db-clean: db-down
-	$(CONTAINER_RUNTIME) rm $(postgres_container)
+	$(CONTAINER) rm $(postgres_container)
 
 .PHONY: gen
 
@@ -70,7 +70,7 @@ $(oapi-codegen):
 gen-sdk: gen/sdk
 
 gen/sdk: api/openapi.yaml
-	$(CONTAINER_RUNTIME) run --rm --volume "$(project):/local" openapitools/openapi-generator-cli generate \
+	$(CONTAINER) run --rm --volume "$(project):/local" openapitools/openapi-generator-cli generate \
     	--generator-name typescript \
     	--input-spec /local/api/openapi.yaml \
     	--output /local/gen/sdk
