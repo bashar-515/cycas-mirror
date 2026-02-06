@@ -88,7 +88,7 @@ gen/db: db/sqlc.yaml $(wildcard db/schema/*.sql) $(wildcard db/queries/*.sql) $(
 	$(sqlc) generate -f db/sqlc.yaml
 
 gen/db/migrations/atlas.sum: db/atlas.hcl $(wildcard db/schema/*.sql)
-	CYCAS_ATLAS_DATABASE_URL="$(database_url_prefix)/$(POSTGRES_DB_ATLAS)?sslmode=disable" atlas --config file://db/atlas.hcl migrate diff --env local migration
+	ATLAS_DATABASE_URL="$(database_url_prefix)/$(POSTGRES_DB_ATLAS)?sslmode=disable" atlas --config file://db/atlas.hcl migrate diff --env local migration
 
 $(sqlc):
 	GOBIN=$(gobin) go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
