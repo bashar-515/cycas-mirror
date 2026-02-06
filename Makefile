@@ -20,7 +20,7 @@ network := cycas-net
 database_url_prefix := postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)
 
 .PHONY: up
-up: app-up db-up 
+up: db-up app-up
 
 .PHONY: down
 down: db-down app-down
@@ -54,7 +54,7 @@ app-clean: app-down
 
 database_container := cycas-db
 
-db-up: network-up app-up
+db-up: network-up
 	@$(CONTAINER) start $(database_container) 2>/dev/null || \
         $(CONTAINER) run \
           	--name $(database_container) \
