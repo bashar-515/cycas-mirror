@@ -27,7 +27,7 @@ down: db-down app-down
 
 .PHONY: clean
 clean: db-clean app-clean
-	rm -rf $(gen) && rm -rf $(gobin)
+	rm -rf $(gen) && rm -rf $(gobin) && rm -rf tmp
 
 .PHONY: app-up app-down app-clean
 
